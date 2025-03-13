@@ -183,6 +183,12 @@ mod context {
 
                 if let Some(entries) = &mut context.entries {
                     let x: &mut Self = self.get_unchecked_mut();
+                    // SAFETY: We extend the lifetime of `Self` to `'static`, I don't know
+                    // if this is sound.
+                    let x = std::mem::transmute::<
+                        *mut (dyn EntryLike + '_),
+                        *mut (dyn EntryLike + 'static),
+                    >(x);
                     entries.push(x as *mut Self as *mut dyn EntryLike);
                 } else {
                     // Fail silently: crash context has been forever disabled for this thread
